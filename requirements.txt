@@ -1,0 +1,4 @@
+Faker==37.0.1
+mysql-connector-python==9.2.0
+python-dotenv==1.0.1
+tzdata==2025.1
