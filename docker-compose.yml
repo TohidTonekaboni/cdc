@@ -64,6 +64,38 @@ services:
     networks:
       - cdc_network
 
+  debezium:
+    image: debezium/connect:3.0.0.Final
+    container_name: debezium
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: connect_configs
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      #
+      CONNECT_REST_ADVERTISED_HOST_NAME: debezium
+      CONNECT_PLUGIN_PATH: /kafka/connect
+      MAX_REQUEST_SIZE: 12582912
+    depends_on: [kafka]
+    ports:
+      - 8083:8083
+    networks:
+      - cdc_network
+
+  debezium-ui:
+    image: debezium/debezium-ui:latest
+    container_name: debezium-ui
+    depends_on: [debezium]
+    ports:
+      - "8085:8080"
+    environment:
+      KAFKA_CONNECT_URIS: http://debezium:8083,http://localhost:8083
+    networks:
+      - cdc_network
 
   mysql:
     image: mysql:latest
