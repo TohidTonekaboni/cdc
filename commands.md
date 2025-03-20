@@ -29,3 +29,31 @@ docker exec kafka kafka-topics --create --bootstrap-server localhost:9092 --repl
 
 # show messages with detail
 docker exec kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic users --from-beginning --property print.timestamp=true --property print.key=true --property print.value=true
+
+
+# debezium
+# get list of plugins
+curl -s -XGET http://localhost:8083/connector-plugins|jq '.[].class'
+# get list of connectors
+curl -s -X GET http://localhost:8083/connectors
+
+# MYSQL Connector
+curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
+  "name": "mysql-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "database.hostname": "mysql",
+    "database.port": "3306",
+    "database.user": "cdc_mysql_user",
+    "database.password": "cdc_mysql_password",
+    "database.server.id": "1",
+    "database.include.list": "CDC_DB",
+    
+    "topic.prefix": "mysql_cdc",
+    
+    "database.history.kafka.bootstrap.servers": "kafka:29092",
+    "database.history.kafka.topic": "mysql_cdc_schema_history"
+  }
+}'
+curl -X GET http://localhost:8083/connectors/mysql-connector/status | jq .
+curl -X DELETE http://localhost:8083/connectors/mysql-connector
