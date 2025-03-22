@@ -1,13 +1,27 @@
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_cdc
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--wal_level=logical"
+    ports:
+      - "5432:5432"
+    volumes:
+      - cdc_postgres_data:/var/lib/postgresql/data
+    networks:
+      - kafka_network
+  
   zookeeper:
-      image: confluentinc/cp-zookeeper:latest
-      container_name: zookeeper
-      environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
-      networks:
-        - cdc_network
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - kafka_network
 
   kafka:
     image: confluentinc/cp-enterprise-kafka:latest
@@ -32,7 +46,7 @@ services:
     volumes:
       - kafka_cdc_data:/var/lib/kafka
     networks:
-      - cdc_network
+      - kafka_network
 
   schema-registry:
     image: confluentinc/cp-schema-registry:latest
@@ -46,7 +60,7 @@ services:
     ports:
       - 8081:8081
     networks:
-      - cdc_network
+      - kafka_network
     depends_on: [zookeeper, kafka]
 
   kafka-ui:
@@ -62,7 +76,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     networks:
-      - cdc_network
+      - kafka_network
 
   debezium:
     image: debezium/connect:3.0.0.Final
@@ -85,38 +99,16 @@ services:
     ports:
       - 8083:8083
     networks:
-      - cdc_network
+      - kafka_network
 
-  debezium-ui:
-    image: debezium/debezium-ui:latest
-    container_name: debezium-ui
-    depends_on: [debezium]
-    ports:
-      - "8085:8080"
-    environment:
-      KAFKA_CONNECT_URIS: http://debezium:8083,http://localhost:8083
-    networks:
-      - cdc_network
-
-  mysql:
-    image: mysql:latest
-    container_name: mysql_container
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE} 
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_cdc_data:/var/lib/mysql
-    networks:
-      - cdc_network
-
-volumes:
-  mysql_cdc_data:
-  kafka_cdc_data:
+  
 
 networks:
-  cdc_network:
+  kafka_network:
+    driver: bridge
+
+volumes:
+  kafka_cdc_data:
+    driver: local
+  cdc_postgres_data:
+    driver: local

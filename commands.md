@@ -37,23 +37,25 @@ curl -s -XGET http://localhost:8083/connector-plugins|jq '.[].class'
 # get list of connectors
 curl -s -X GET http://localhost:8083/connectors
 
-# MYSQL Connector
-curl -X POST http://localhost:8083/connectors -H "Content-Type: application/json" -d '{
-  "name": "mysql-connector",
+# POSTGRES Connector
+curl -i -X POST http://localhost:8083/connectors/ -H "Accept: application/json" -H "Content-Type: application/json" -d '{
+  "name": "postgres-cdc",
   "config": {
-    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
-    "database.hostname": "mysql",
-    "database.port": "3306",
-    "database.user": "cdc_mysql_user",
-    "database.password": "cdc_mysql_password",
-    "database.server.id": "1",
-    "database.include.list": "CDC_DB",
-    
-    "topic.prefix": "mysql_cdc",
-    
-    "database.history.kafka.bootstrap.servers": "kafka:29092",
-    "database.history.kafka.topic": "mysql_cdc_schema_history"
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "cdc",
+    "database.password": "cdc123",
+    "database.dbname": "cdc_db",
+    "database.server.name": "postgres_server",
+    "plugin.name": "pgoutput",
+    "slot.name": "debezium_slot",
+    "publication.autocreate.mode": "filtered",
+    "table.include.list": "public.students",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.postgres",
+    "topic.prefix": "cdc_posgres_topic"
   }
 }'
-curl -X GET http://localhost:8083/connectors/mysql-connector/status | jq .
-curl -X DELETE http://localhost:8083/connectors/mysql-connector
+
+curl -s -X GET http://localhost:8083/connectors/postgres-cdc/status | jq '.'

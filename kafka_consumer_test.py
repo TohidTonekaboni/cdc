@@ -2,7 +2,7 @@ from confluent_kafka import Consumer, KafkaException
 import json
 
 # Kafka settings
-KAFKA_BROKER = "localhost:29092"
+KAFKA_BROKER = "localhost:9092"
 TOPIC = "users"
 GROUP_ID = "user-group"
 

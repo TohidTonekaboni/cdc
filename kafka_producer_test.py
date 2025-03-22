@@ -3,7 +3,7 @@ import time
 import json
 
 # Kafka broker settings
-KAFKA_BROKER = "localhost:29092"
+KAFKA_BROKER = "localhost:9092"
 TOPIC = "users"
 
 # Configure the Kafka producer

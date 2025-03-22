@@ -1,5 +1,6 @@
 confluent-kafka==2.8.2
 Faker==37.0.1
 mysql-connector-python==9.2.0
+psycopg2-binary==2.9.10
 python-dotenv==1.0.1
 tzdata==2025.1
