@@ -101,13 +101,71 @@ services:
     networks:
       - kafka_network
 
-  
+
+  spark-master:
+    image: docker.io/bitnami/spark:3.5
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+    volumes:
+      - ./data/apps:/spark-apps
+      - ./data/data:/spark-data
+    ports:
+      - '8080:8080'
+    networks:
+      - kafka_network
+
+  spark-worker:
+    image: docker.io/bitnami/spark:3.5
+    container_name: spark-worker
+    hostname: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=2
+      - SPARK_DRIVER_MEMORY=1G
+      - SPARK_EXECUTOR_MEMORY=512M
+      - SPARK_LOCAL_IP=spark-worker
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+      - SPARK_LOCAL_IP=0.0.0.0
+    volumes:
+      - ./data/apps:/spark-apps
+      - ./data/data:/spark-data
+    ports:
+      - "8081:8081"
+    networks:
+      - kafka_network
+
+  jupyetr:
+    build: ./jupyter
+    container_name: jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    networks:
+      - kafka_network
 
 networks:
   kafka_network:
     driver: bridge
 
 volumes:
+  notebooks:
+    driver: local
   kafka_cdc_data:
     driver: local
   cdc_postgres_data:

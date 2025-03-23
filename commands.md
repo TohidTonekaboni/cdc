@@ -59,3 +59,6 @@ curl -i -X POST http://localhost:8083/connectors/ -H "Accept: application/json" 
 }'
 
 curl -s -X GET http://localhost:8083/connectors/postgres-cdc/status | jq '.'
+
+
+
